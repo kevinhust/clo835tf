@@ -126,6 +126,33 @@ resource "aws_instance" "clo835_ec2" {
   key_name                    = data.aws_key_pair.clo835_key.key_name
   iam_instance_profile        = data.aws_iam_instance_profile.LabProfile_profile.name
   associate_public_ip_address = true
+  
+  user_data = <<-EOF
+    #!/bin/bash
+    dnf update -y
+
+    # Install Docker
+    dnf install -y docker
+    systemctl start docker
+    usermod -a -G docker ec2-user
+    systemctl enable docker
+
+    # Install docker-compose
+    dnf install -y docker-compose-plugin
+
+    # Install git
+    dnf install -y git
+
+    # Install awscli
+    dnf install -y awscli
+
+    # Install mysql client
+    dnf install -y mysql
+
+    # Make docker compose command available
+    ln -s /usr/libexec/docker/cli-plugins/docker-compose /usr/bin/docker-compose || true
+  EOF
+
   tags = {
     Name = "CLO835-ec2"
   }
